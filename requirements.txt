@@ -1,0 +1,12 @@
+streamlit
+langgraph
+langchain
+langchain-openai
+langchain-core
+tavily-python
+python-docx
+pymupdf
+google-api-python-client
+plotly
+python-dotenv
+pydantic
