@@ -53,7 +53,7 @@ if analyze_clicked:
     graph = build_graph()
 
     progress = st.empty()
-    status_container = st.status("Analysing …", expanded=True)
+    status_container = st.status("Analyzing …", expanded=True)
 
     with status_container:
         final_state = {}
@@ -64,7 +64,9 @@ if analyze_clicked:
             node_name = list(event.keys())[0]
             readable = node_name.replace("_", " ").title()
             st.write(f"Running: **{readable}** …")
-            final_state.update(event[node_name])
+            node_output = event[node_name]
+            if node_output:
+                final_state.update(node_output)
 
     status_container.update(label="Analysis complete", state="complete")
 
