@@ -7,6 +7,17 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
 
+API_KEYS = {
+    "OPENAI_API_KEY": (OPENAI_API_KEY, "LLM analysis (resume & job parsing)"),
+    "TAVILY_API_KEY": (TAVILY_API_KEY, "Web articles, news, blog posts, books, courses"),
+    "YOUTUBE_API_KEY": (YOUTUBE_API_KEY, "YouTube videos"),
+}
+
+
+def missing_api_keys() -> list[str]:
+    """Return names of API keys that are missing or empty."""
+    return [name for name, (value, _) in API_KEYS.items() if not (value or "").strip()]
+
 LLM_MODEL = "gpt-4o"
 LLM_TEMPERATURE = 0.2
 

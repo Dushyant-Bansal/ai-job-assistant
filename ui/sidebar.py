@@ -4,10 +4,21 @@ from __future__ import annotations
 
 import streamlit as st
 
+from config.settings import API_KEYS, missing_api_keys
+
 
 def render_sidebar() -> tuple:
     """Render the sidebar and return (uploaded_file, job_description, analyze_clicked)."""
     with st.sidebar:
+        missing = missing_api_keys()
+        if missing:
+            st.warning(
+                "**Missing API keys:** "
+                + ", ".join(missing)
+                + ". Add them to `.env` to enable all features. "
+                "See README for setup."
+            )
+
         st.header("Inputs")
 
         st.subheader("1. Upload your resume")

@@ -14,10 +14,25 @@ from tools.tavily_tools import TavilySearchTool
 from tools.youtube_tool import YouTubeSearchTool
 
 
+def _skill_name(s) -> str:
+    """Extract skill name from Skill or dict."""
+    return s.name if hasattr(s, "name") else s.get("name", "")
+
+
 def _top_gap_skill_names(state: GraphState) -> list[str]:
-    """Return the names of the top-N skills with the biggest gaps."""
+    """Return the names of the top-N skills with the biggest gaps.
+
+    Falls back to required_skills when there are no gaps (e.g. perfect match).
+    """
     gaps = state.get("skill_gaps", [])
-    return [g.skill_name for g in gaps[:MAX_SKILLS_TO_SEARCH]]
+    if gaps:
+        return [
+            g.skill_name if hasattr(g, "skill_name") else g.get("skill_name", "")
+            for g in gaps[:MAX_SKILLS_TO_SEARCH]
+        ]
+    # No gaps — use top required skills so we still get resources
+    required = state.get("required_skills", [])
+    return [_skill_name(s) for s in required[:MAX_SKILLS_TO_SEARCH]]
 
 
 class WebArticleSearchAgent:

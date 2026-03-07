@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from config.settings import API_KEYS, missing_api_keys
 from graph.builder import build_graph, build_recompute_graph
 from parsers.file_parser import parse_resume
 from ui.overrides import render_override_section
@@ -30,6 +31,14 @@ st.markdown(
     "Upload your resume and paste a software engineering job description to "
     "discover your skill gaps and get a personalised training plan."
 )
+
+missing_keys = missing_api_keys()
+if missing_keys:
+    with st.expander("⚠️ Missing API keys — some features disabled", expanded=True):
+        for name in missing_keys:
+            _, description = API_KEYS[name]
+            st.markdown(f"- **{name}** — {description}")
+        st.caption("Add keys to `.env` and restart. See README for setup.")
 
 # ---------------------------------------------------------------------------
 # Sidebar inputs

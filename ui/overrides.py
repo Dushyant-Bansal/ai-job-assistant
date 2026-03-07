@@ -10,11 +10,20 @@ from config.settings import SOFTWARE_DOMAINS
 from models.state import Skill
 
 
-def _to_skill(item: Skill | dict[str, Any]) -> Skill:
-    """Normalise dict or Skill to Skill."""
+def _to_skill(item: Skill | dict[str, Any] | Any) -> Skill:
+    """Normalise dict, Skill, or object-like to Skill."""
     if isinstance(item, Skill):
         return item
-    return Skill(**item)
+    if isinstance(item, dict):
+        return Skill(**item)
+    # Object with attributes (e.g. Skill from different import/session)
+    return Skill(
+        name=getattr(item, "name", ""),
+        category=getattr(item, "category", "technical"),
+        rating=getattr(item, "rating", 50),
+        years_experience=getattr(item, "years_experience", None),
+        depth_signal=getattr(item, "depth_signal", ""),
+    )
 
 
 def render_override_section(
