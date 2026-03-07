@@ -2,7 +2,17 @@
 
 from __future__ import annotations
 
-from models.state import GraphState, SkillGap
+from typing import Any
+
+from models.state import GraphState, Skill, SkillGap
+
+
+def _skill_rating(s: Skill | dict[str, Any]) -> int:
+    return s.rating if hasattr(s, "rating") else s.get("rating", 0)
+
+
+def _skill_name(s: Skill | dict[str, Any]) -> str:
+    return s.name if hasattr(s, "name") else s.get("name", "")
 
 
 class SkillMatcherAgent:
@@ -14,7 +24,8 @@ class SkillMatcherAgent:
 
     def run(self, state: GraphState) -> dict:
         user_map: dict[str, int] = {
-            s.name.lower(): s.rating for s in state["user_skills"]
+            _skill_name(s).lower(): _skill_rating(s)
+            for s in state["user_skills"]
         }
 
         gaps: list[SkillGap] = []
@@ -22,8 +33,9 @@ class SkillMatcherAgent:
         total_weight = 0.0
 
         for req in state["required_skills"]:
-            req_rating = req.rating
-            user_rating = user_map.get(req.name.lower(), 0)
+            req_rating = _skill_rating(req)
+            req_name = _skill_name(req)
+            user_rating = user_map.get(req_name.lower(), 0)
             total_weight += req_rating
             weighted_match += min(user_rating, req_rating)
 
@@ -39,7 +51,7 @@ class SkillMatcherAgent:
                     priority = "low"
                 gaps.append(
                     SkillGap(
-                        skill_name=req.name,
+                        skill_name=req_name,
                         user_rating=user_rating,
                         required_rating=req_rating,
                         gap=gap,

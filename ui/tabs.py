@@ -23,6 +23,7 @@ def render_resource_tabs(state: GraphState) -> None:
     tab_labels = [
         "Web Articles",
         "News",
+        "Blog Posts",
         "YouTube Videos",
         "Amazon Books",
         "Training Courses",
@@ -36,6 +37,9 @@ def render_resource_tabs(state: GraphState) -> None:
         _render_resource_list(state.get("news_articles", []))
 
     with tabs[2]:
+        _render_resource_list(state.get("blog_posts", []))
+
+    with tabs[3]:
         videos = state.get("youtube_videos", [])
         if not videos:
             st.info("No videos found.")
@@ -54,10 +58,10 @@ def render_resource_tabs(state: GraphState) -> None:
                     if v.description:
                         st.caption(v.description)
 
-    with tabs[3]:
+    with tabs[4]:
         _render_resource_list(state.get("amazon_books", []))
 
-    with tabs[4]:
+    with tabs[5]:
         courses = state.get("training_courses", [])
         if not courses:
             st.info("No courses found.")

@@ -72,3 +72,43 @@ class TavilySearchTool:
             except Exception:
                 continue
         return resources
+
+    def search_blog_posts(
+        self,
+        skill_names: list[str],
+        domain: str = "",
+    ) -> list[LearningResource]:
+        """Search for relevant blog posts on dev.to, Medium, Hashnode, etc."""
+        resources: list[LearningResource] = []
+        for skill in skill_names:
+            query = f"{skill} blog software engineering"
+            if domain:
+                query += f" {domain}"
+            try:
+                results = self._client.search(
+                    query,
+                    search_depth="advanced",
+                    max_results=MAX_RESOURCE_RESULTS_PER_SKILL,
+                )
+                for r in results.get("results", []):
+                    url = r.get("url", "")
+                    source = "blog"
+                    if "dev.to" in url:
+                        source = "dev.to"
+                    elif "medium.com" in url:
+                        source = "Medium"
+                    elif "hashnode" in url:
+                        source = "Hashnode"
+                    elif "substack.com" in url:
+                        source = "Substack"
+                    resources.append(
+                        LearningResource(
+                            title=r.get("title", ""),
+                            url=url,
+                            source=source,
+                            description=(r.get("content", "") or "")[:300],
+                        )
+                    )
+            except Exception:
+                continue
+        return resources

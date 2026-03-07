@@ -83,3 +83,16 @@ class CourseSearchAgent:
         domain = state.get("software_domain", "")
         courses = self._tool.search(skills, domain)
         return {"training_courses": courses}
+
+
+class BlogSearchAgent:
+    """Searches for relevant blog posts on dev.to, Medium, Hashnode, etc."""
+
+    def __init__(self) -> None:
+        self._tool = TavilySearchTool()
+
+    def run(self, state: GraphState) -> dict:
+        skills = _top_gap_skill_names(state)
+        domain = state.get("software_domain", "")
+        posts = self._tool.search_blog_posts(skills, domain)
+        return {"blog_posts": posts}

@@ -119,6 +119,7 @@ class GraphState(TypedDict, total=False):
     youtube_videos: Annotated[list[LearningResource], _merge_resources]
     amazon_books: Annotated[list[LearningResource], _merge_resources]
     training_courses: Annotated[list[LearningResource], _merge_resources]
+    blog_posts: Annotated[list[LearningResource], _merge_resources]
 
     # Output
     training_plan: list[TrainingStep]

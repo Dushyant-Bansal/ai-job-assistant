@@ -59,6 +59,7 @@ def _resources_payload(state: GraphState) -> str:
         "youtube_videos",
         "amazon_books",
         "training_courses",
+        "blog_posts",
     ):
         for r in state.get(key, []):
             item = r if isinstance(r, dict) else r.model_dump()

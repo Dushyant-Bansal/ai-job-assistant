@@ -8,6 +8,7 @@ from models.state import GraphState
 from graph.nodes.jd_analyzer import JDAnalyzerAgent
 from graph.nodes.resource_finder import (
     AmazonBookSearchAgent,
+    BlogSearchAgent,
     CourseSearchAgent,
     NewsSearchAgent,
     WebArticleSearchAgent,
@@ -28,6 +29,7 @@ _news_agent = NewsSearchAgent()
 _youtube_agent = YouTubeSearchAgent()
 _amazon_agent = AmazonBookSearchAgent()
 _course_agent = CourseSearchAgent()
+_blog_agent = BlogSearchAgent()
 _planner_agent = TrainingPlannerAgent()
 
 
@@ -77,6 +79,10 @@ def search_courses(state: GraphState) -> dict:
     return _course_agent.run(state)
 
 
+def search_blog_posts(state: GraphState) -> dict:
+    return _blog_agent.run(state)
+
+
 def generate_training_plan(state: GraphState) -> dict:
     return _planner_agent.run(state)
 
@@ -105,6 +111,7 @@ def build_graph():
     graph.add_node("search_youtube", search_youtube)
     graph.add_node("search_amazon", search_amazon)
     graph.add_node("search_courses", search_courses)
+    graph.add_node("search_blog_posts", search_blog_posts)
     graph.add_node("generate_training_plan", generate_training_plan)
 
     # --- Edges ---
@@ -124,6 +131,7 @@ def build_graph():
     graph.add_edge("match_skills", "search_youtube")
     graph.add_edge("match_skills", "search_amazon")
     graph.add_edge("match_skills", "search_courses")
+    graph.add_edge("match_skills", "search_blog_posts")
 
     # Fan-in: all searches feed into the training planner
     graph.add_edge("search_web_articles", "generate_training_plan")
@@ -131,6 +139,45 @@ def build_graph():
     graph.add_edge("search_youtube", "generate_training_plan")
     graph.add_edge("search_amazon", "generate_training_plan")
     graph.add_edge("search_courses", "generate_training_plan")
+    graph.add_edge("search_blog_posts", "generate_training_plan")
+
+    graph.add_edge("generate_training_plan", END)
+
+    return graph.compile()
+
+
+def build_recompute_graph():
+    """Builds a graph that runs from match_skills onward.
+
+    Used when the user provides overrides (skill ratings, domain). Expects
+    initial state to already contain user_skills, required_skills, job_title,
+    industry, is_software_job, software_domain — with overrides applied.
+    """
+    graph = StateGraph(GraphState)
+
+    graph.add_node("match_skills", match_skills)
+    graph.add_node("search_web_articles", search_web_articles)
+    graph.add_node("search_news", search_news)
+    graph.add_node("search_youtube", search_youtube)
+    graph.add_node("search_amazon", search_amazon)
+    graph.add_node("search_courses", search_courses)
+    graph.add_node("search_blog_posts", search_blog_posts)
+    graph.add_node("generate_training_plan", generate_training_plan)
+
+    graph.set_entry_point("match_skills")
+    graph.add_edge("match_skills", "search_web_articles")
+    graph.add_edge("match_skills", "search_news")
+    graph.add_edge("match_skills", "search_youtube")
+    graph.add_edge("match_skills", "search_amazon")
+    graph.add_edge("match_skills", "search_courses")
+    graph.add_edge("match_skills", "search_blog_posts")
+
+    graph.add_edge("search_web_articles", "generate_training_plan")
+    graph.add_edge("search_news", "generate_training_plan")
+    graph.add_edge("search_youtube", "generate_training_plan")
+    graph.add_edge("search_amazon", "generate_training_plan")
+    graph.add_edge("search_courses", "generate_training_plan")
+    graph.add_edge("search_blog_posts", "generate_training_plan")
 
     graph.add_edge("generate_training_plan", END)
 

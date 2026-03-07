@@ -25,17 +25,28 @@ def render_match_score(state: GraphState) -> None:
     col3.metric("Domain", state.get("software_domain", "N/A"))
 
 
+def _skill_name(s) -> str:
+    return s.name if hasattr(s, "name") else s.get("name", "")
+
+
+def _skill_rating(s) -> int:
+    return s.rating if hasattr(s, "rating") else s.get("rating", 0)
+
+
 def render_skill_chart(state: GraphState) -> None:
     """Horizontal bar chart comparing user skills vs required skills."""
     required = state.get("required_skills", [])
     if not required:
         return
 
-    user_map = {s.name.lower(): s.rating for s in state.get("user_skills", [])}
+    user_map = {
+        _skill_name(s).lower(): _skill_rating(s)
+        for s in state.get("user_skills", [])
+    }
 
-    skill_names = [s.name for s in required]
-    req_ratings = [s.rating for s in required]
-    user_ratings = [user_map.get(s.name.lower(), 0) for s in required]
+    skill_names = [_skill_name(s) for s in required]
+    req_ratings = [_skill_rating(s) for s in required]
+    user_ratings = [user_map.get(_skill_name(s).lower(), 0) for s in required]
 
     fig = go.Figure()
     fig.add_trace(
