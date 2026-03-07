@@ -103,11 +103,14 @@ render_resource_tabs(result)
 # Override & Re-analyze
 # ---------------------------------------------------------------------------
 user_skills = result.get("user_skills", [])
+required_skills = result.get("required_skills", [])
 current_domain = result.get("software_domain", "")
-override_result = render_override_section(user_skills, current_domain)
+override_result = render_override_section(
+    user_skills, required_skills, current_domain
+)
 
 if override_result:
-    overridden_skills, new_domain = override_result
+    overridden_user_skills, overridden_required_skills, new_domain = override_result
 
     exclude_keys = {
         "match_percentage",
@@ -124,7 +127,8 @@ if override_result:
         k: v for k, v in result.items()
         if k not in exclude_keys and v is not None
     }
-    initial_state["user_skills"] = overridden_skills
+    initial_state["user_skills"] = overridden_user_skills
+    initial_state["required_skills"] = overridden_required_skills
     initial_state["software_domain"] = new_domain
 
     with st.status("Re-analyzing with overrides …", expanded=True) as status:

@@ -19,35 +19,67 @@ def _to_skill(item: Skill | dict[str, Any]) -> Skill:
 
 def render_override_section(
     user_skills: list[Skill] | list[dict[str, Any]],
+    required_skills: list[Skill] | list[dict[str, Any]],
     current_domain: str,
-) -> tuple[list[Skill], str] | None:
-    """Render the override controls and return (overridden_skills, domain) if re-analyze clicked.
+) -> tuple[list[Skill], list[Skill], str] | None:
+    """Render the override controls and return (user_skills, required_skills, domain) if re-analyze clicked.
 
     Returns None if the user has not clicked Re-analyze.
     """
     with st.expander("Override & Re-analyze", expanded=False):
         st.caption(
-            "Adjust your skill ratings or the job domain, then re-run the analysis "
-            "to see updated match scores and training recommendations."
+            "Adjust your skill ratings, the job's required skills, or remove skills that "
+            "don't seem necessary. Then re-run the analysis."
         )
 
-        overrides: dict[str, int] = {}
-        skills = [_to_skill(s) for s in user_skills] if user_skills else []
+        user_overrides: dict[str, int] = {}
+        user_skills_list = [_to_skill(s) for s in user_skills] if user_skills else []
 
-        if skills:
-            st.subheader("Skill rating overrides")
+        if user_skills_list:
+            st.subheader("Your skills (from resume)")
             st.caption("Change any rating (1–100) to reflect your actual proficiency.")
             cols = st.columns(3)
-        for i, skill in enumerate(skills):
-            with cols[i % 3]:
-                val = st.number_input(
-                    f"{skill.name}",
-                    min_value=1,
-                    max_value=100,
-                    value=skill.rating,
-                    key=f"override_skill_{i}_{skill.name}",
-                )
-                overrides[skill.name] = val
+            for i, skill in enumerate(user_skills_list):
+                with cols[i % 3]:
+                    val = st.number_input(
+                        f"{skill.name}",
+                        min_value=1,
+                        max_value=100,
+                        value=skill.rating,
+                        key=f"override_user_{i}_{skill.name}",
+                    )
+                    user_overrides[skill.name] = val
+
+        req_skills_list = [_to_skill(s) for s in required_skills] if required_skills else []
+        req_overrides: dict[str, int] = {}
+        req_included: dict[str, bool] = {}
+
+        if req_skills_list:
+            st.subheader("Job required skills")
+            st.caption(
+                "Adjust required ratings or uncheck skills to exclude from analysis."
+            )
+            for i, skill in enumerate(req_skills_list):
+                col1, col2, col3 = st.columns([2, 1, 2])
+                with col1:
+                    st.markdown(f"**{skill.name}**")
+                with col2:
+                    included = st.checkbox(
+                        "Include",
+                        value=True,
+                        key=f"include_req_{i}_{skill.name}",
+                    )
+                    req_included[skill.name] = included
+                with col3:
+                    val = st.number_input(
+                        "Rating (1–100)",
+                        min_value=1,
+                        max_value=100,
+                        value=skill.rating,
+                        key=f"override_req_{i}_{skill.name}",
+                        disabled=not included,
+                    )
+                    req_overrides[skill.name] = val
 
         st.subheader("Job domain override")
         domain_idx = (
@@ -73,15 +105,27 @@ def render_override_section(
     if not reanalyze_clicked:
         return None
 
-    skills = [_to_skill(s) for s in user_skills]
-    overridden_skills = [
+    overridden_user = [
         Skill(
             name=s.name,
             category=s.category,
-            rating=overrides.get(s.name, s.rating),
+            rating=user_overrides.get(s.name, s.rating),
             years_experience=s.years_experience,
             depth_signal=s.depth_signal,
         )
-        for s in skills
+        for s in user_skills_list
     ]
-    return overridden_skills, new_domain
+
+    overridden_required = [
+        Skill(
+            name=s.name,
+            category=s.category,
+            rating=req_overrides.get(s.name, s.rating),
+            years_experience=s.years_experience,
+            depth_signal=s.depth_signal,
+        )
+        for s in req_skills_list
+        if req_included.get(s.name, True)
+    ]
+
+    return overridden_user, overridden_required, new_domain

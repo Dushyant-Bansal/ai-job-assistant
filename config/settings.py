@@ -14,7 +14,12 @@ MAX_RESOURCE_RESULTS_PER_SKILL = 3
 MAX_SKILLS_TO_SEARCH = 5
 
 SOFTWARE_DOMAINS = [
-    "Applied AI / Machine Learning",
+    "LLM Training / LLM Development",
+    "RAG / Retrieval-Augmented Generation",
+    "AI Agentic Development",
+    "AI Agentic Infrastructure",
+    "AI Agentic Development",
+    "Machine Learning",
     "AI Infrastructure",
     "Data Engineering / ETL",
     "Distributed Systems",
