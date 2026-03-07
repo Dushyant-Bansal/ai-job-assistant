@@ -95,26 +95,12 @@ if result is None:
     st.stop()
 
 # ---------------------------------------------------------------------------
-# Results
-# ---------------------------------------------------------------------------
-st.divider()
-render_match_score(result)
-st.divider()
-render_skill_chart(result)
-st.divider()
-render_skill_gaps(result.get("skill_gaps", []))
-st.divider()
-render_training_plan(result.get("training_plan", []))
-st.divider()
-render_resource_tabs(result)
-
-# ---------------------------------------------------------------------------
-# Override & Re-analyze
+# Override & Re-analyze — check first so we replace the page when clicked
 # ---------------------------------------------------------------------------
 user_skills = result.get("user_skills", [])
 required_skills = result.get("required_skills", [])
 current_domain = result.get("software_domain", "")
-override_result = render_override_section(
+override_result, effective_required_skills = render_override_section(
     user_skills, required_skills, current_domain
 )
 
@@ -140,7 +126,8 @@ if override_result:
     initial_state["required_skills"] = overridden_required_skills
     initial_state["software_domain"] = new_domain
 
-    with st.status("Re-analyzing with overrides …", expanded=True) as status:
+    st.divider()
+    with st.status("Re-analyzing with overrides …", expanded=True):
         recompute_graph = build_recompute_graph()
         new_state = {}
         for event in recompute_graph.stream(initial_state, stream_mode="updates"):
@@ -154,3 +141,17 @@ if override_result:
     result = {**result, **new_state}
     st.session_state["analysis_result"] = result
     st.rerun()
+
+# ---------------------------------------------------------------------------
+# Results — only rendered when not re-analyzing (page replaced after rerun)
+# ---------------------------------------------------------------------------
+st.divider()
+render_match_score(result)
+st.divider()
+render_skill_chart(result, required_skills_override=effective_required_skills)
+st.divider()
+render_skill_gaps(result.get("skill_gaps", []))
+st.divider()
+render_training_plan(result.get("training_plan", []))
+st.divider()
+render_resource_tabs(result)

@@ -30,12 +30,14 @@ def render_override_section(
     user_skills: list[Skill] | list[dict[str, Any]],
     required_skills: list[Skill] | list[dict[str, Any]],
     current_domain: str,
-) -> tuple[list[Skill], list[Skill], str] | None:
-    """Render the override controls and return (user_skills, required_skills, domain) if re-analyze clicked.
+) -> tuple[tuple[list[Skill], list[Skill], str] | None, list[Skill]]:
+    """Render the override controls.
 
-    Returns None if the user has not clicked Re-analyze.
+    Returns (override_result, effective_required_skills).
+    - override_result: (user_skills, required_skills, domain) if Re-analyze clicked, else None.
+    - effective_required_skills: required skills currently included (for chart display).
     """
-    with st.expander("Override & Re-analyze", expanded=False):
+    with st.expander("Override & Re-analyze", expanded=True):
         st.caption(
             "Adjust your skill ratings, the job's required skills, or remove skills that "
             "don't seem necessary. Then re-run the analysis."
@@ -111,8 +113,20 @@ def render_override_section(
             key="reanalyze_btn",
         )
 
+    effective_required = [
+        Skill(
+            name=s.name,
+            category=s.category,
+            rating=req_overrides.get(s.name, s.rating),
+            years_experience=s.years_experience,
+            depth_signal=s.depth_signal,
+        )
+        for s in req_skills_list
+        if req_included.get(s.name, True)
+    ]
+
     if not reanalyze_clicked:
-        return None
+        return None, effective_required
 
     overridden_user = [
         Skill(
@@ -125,16 +139,6 @@ def render_override_section(
         for s in user_skills_list
     ]
 
-    overridden_required = [
-        Skill(
-            name=s.name,
-            category=s.category,
-            rating=req_overrides.get(s.name, s.rating),
-            years_experience=s.years_experience,
-            depth_signal=s.depth_signal,
-        )
-        for s in req_skills_list
-        if req_included.get(s.name, True)
-    ]
+    overridden_required = effective_required
 
-    return overridden_user, overridden_required, new_domain
+    return (overridden_user, overridden_required, new_domain), effective_required

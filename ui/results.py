@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -33,9 +35,16 @@ def _skill_rating(s) -> int:
     return s.rating if hasattr(s, "rating") else s.get("rating", 0)
 
 
-def render_skill_chart(state: GraphState) -> None:
+def render_skill_chart(
+    state: GraphState,
+    required_skills_override: list[Any] | None = None,
+) -> None:
     """Horizontal bar chart comparing user skills vs required skills."""
-    required = state.get("required_skills", [])
+    required = (
+        required_skills_override
+        if required_skills_override is not None
+        else state.get("required_skills", [])
+    )
     if not required:
         return
 
