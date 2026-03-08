@@ -32,7 +32,7 @@ st.set_page_config(
 st.title("\U0001f3af AI Job Training Assistant")
 st.markdown(
     "Upload your resume and paste a software engineering job description to "
-    "discover your skill gaps and get a personalised training plan."
+    "discover your skill gaps and get a personalized training plan."
 )
 
 missing_keys = missing_api_keys()
@@ -171,7 +171,7 @@ if warnings:
 st.divider()
 render_resource_tabs(result)
 
-with st.expander("Debug: resource counts & search inputs", expanded=True):
+with st.expander("Debug: resource counts & search inputs", expanded=False):
     def _skill_name(s):
         return s.name if hasattr(s, "name") else s.get("name", "")
     gaps = result.get("skill_gaps", [])
