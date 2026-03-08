@@ -289,7 +289,7 @@ def main() -> None:
             "Canonical skill mapping — synonyms (LLMs, RAG, K8s) normalized for matching",
             "Graceful degradation — missing API keys disable features, not the app",
             "Privacy-first — resume & JD not stored on any server",
-            "User overrides — add skills, adjust ratings, change domain; re-analyze without re-upload",
+            "Human in the loop — user overrides: add skills, adjust ratings, change domain; re-analyze without re-upload",
         ],
     )
 
@@ -362,7 +362,7 @@ def main() -> None:
             "Tavily returning 0 — surface API errors in resource_search_warnings",
             "Token limit (429) — truncate JD to 15,000 chars",
             "Empty skill_gaps when ignoring PLs — added required_skills_for_resources fallback",
-            "Add skill to resume — override UI with Add/Remove, re-analyze from normalize_skills",
+            "Add skill to resume — human-in-the-loop override UI with Add/Remove, re-analyze from normalize_skills",
             "Export as JSON — build_export_json, download button",
             "Privacy note — displayed in sidebar",
         ],

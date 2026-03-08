@@ -22,7 +22,7 @@ An AI-powered tool that analyzes your resume against a software engineering job 
 - **Skill matching** — computes a weighted match percentage and highlights gaps.
 - **Resource discovery** — searches for web articles, news, YouTube videos, Amazon books, blog posts, and courses on O'Reilly, Pluralsight, Coursera, Udemy, and DeepLearning.ai.
 - **Training plan** — prioritised, actionable study plan based on skill gaps.
-- **User overrides** — add skills, adjust ratings, change domain; re-analyze without re-uploading.
+- **User overrides (human in the loop)** — add skills, adjust ratings, change domain; re-analyze without re-uploading.
 - **Export** — download full analysis as JSON.
 
 ---
@@ -36,7 +36,7 @@ An AI-powered tool that analyzes your resume against a software engineering job 
 | **Canonical skill mapping** | Synonyms (LLMs, RAG, K8s, Python 3) normalized for matching. |
 | **Graceful degradation** | Missing API keys disable features, not the app; warnings shown in UI. |
 | **Privacy-first** | Resume and job description are not stored on any server. |
-| **User overrides** | Add skills, adjust ratings, change domain; re-analyze from `normalize_skills` onward. |
+| **User overrides (human in the loop)** | Add skills, adjust ratings, change domain; re-analyze from `normalize_skills` onward. |
 
 ---
 
