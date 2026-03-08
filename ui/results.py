@@ -7,7 +7,22 @@ from typing import Any
 import plotly.graph_objects as go
 import streamlit as st
 
+from config.settings import normalize_skill_name
 from models.state import GraphState, SkillGap, TrainingStep
+
+
+def _skill_canonical(name: str, canonical_map: dict[str, str] | None) -> str:
+    """Return canonical skill name for matching (same logic as skill_matcher)."""
+    if canonical_map is None:
+        return normalize_skill_name(name)
+    n = name.strip()
+    if n in canonical_map:
+        return canonical_map[n]
+    name_lower = n.lower()
+    for k, v in canonical_map.items():
+        if k.strip().lower() == name_lower:
+            return v
+    return normalize_skill_name(name)
 
 
 def _priority_emoji(priority: str) -> str:
@@ -48,14 +63,19 @@ def render_skill_chart(
     if not required:
         return
 
-    user_map = {
-        _skill_name(s).lower(): _skill_rating(s)
-        for s in state.get("user_skills", [])
-    }
+    canonical_map = state.get("skill_canonical_map")
+    user_map: dict[str, int] = {}
+    for s in state.get("user_skills", []):
+        key = _skill_canonical(_skill_name(s), canonical_map).lower()
+        rating = _skill_rating(s)
+        user_map[key] = max(user_map.get(key, 0), rating)
 
     skill_names = [_skill_name(s) for s in required]
     req_ratings = [_skill_rating(s) for s in required]
-    user_ratings = [user_map.get(_skill_name(s).lower(), 0) for s in required]
+    user_ratings = [
+        user_map.get(_skill_canonical(_skill_name(s), canonical_map).lower(), 0)
+        for s in required
+    ]
 
     fig = go.Figure()
     fig.add_trace(
