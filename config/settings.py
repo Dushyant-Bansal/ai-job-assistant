@@ -29,7 +29,6 @@ SOFTWARE_DOMAINS = [
     "RAG / Retrieval-Augmented Generation",
     "AI Agentic Development",
     "AI Agentic Infrastructure",
-    "AI Agentic Development",
     "Machine Learning",
     "AI Infrastructure",
     "Data Engineering / ETL",
