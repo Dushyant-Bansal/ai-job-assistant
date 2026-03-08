@@ -184,6 +184,10 @@ if override_result:
                     new_state.update(node_output)
 
     result = {**result, **new_state}
+    result["user_skills"] = overridden_user_skills
+    result["required_skills"] = overridden_required_skills
+    result["required_skills_for_resources"] = overridden_required_skills
+    result["software_domain"] = new_domain
     st.session_state["analysis_result"] = result
     st.rerun()
 
