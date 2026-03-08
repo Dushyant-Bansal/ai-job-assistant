@@ -8,7 +8,7 @@ from typing import Any
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-from config.settings import LLM_MODEL, LLM_TEMPERATURE
+from config.settings import LLM_MODEL, LLM_TEMPERATURE, normalize_skill_name
 from models.state import GraphState
 
 
@@ -44,7 +44,12 @@ Return the mapping as JSON only, no markdown.
 
 
 class SkillNormalizerAgent:
-    """LLM-backed agent that normalizes skill names and groups synonyms."""
+    """LLM-backed agent that normalizes skill names and groups synonyms.
+
+    Uses manual JSON parsing (not Pydantic structured output) because OpenAI
+    structured output requires additionalProperties: false and does not support
+    dynamic dict keys.
+    """
 
     def __init__(self) -> None:
         self._llm = ChatOpenAI(
@@ -88,5 +93,9 @@ class SkillNormalizerAgent:
                 mapping[key] = key
             if name != key:
                 mapping[name] = mapping[key]
+
+        # Normalize all canonical values through config (e.g. "Large Language Models (LLMs)" -> "LLMs")
+        # so LLM output aligns with SKILL_SYNONYMS and resume/JD variants match.
+        mapping = {k: normalize_skill_name(v) for k, v in mapping.items()}
 
         return {"skill_canonical_map": mapping}

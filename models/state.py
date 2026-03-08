@@ -75,6 +75,15 @@ class TrainingStep(BaseModel):
     resources: list[LearningResource] = Field(default_factory=list)
 
 
+class TrainingPlan(BaseModel):
+    """Structured output from training plan generation."""
+
+    steps: list[TrainingStep] = Field(
+        default_factory=list,
+        description="Prioritised training steps, ordered by importance.",
+    )
+
+
 # ---------------------------------------------------------------------------
 # LangGraph state – the central data contract flowing through every node
 # ---------------------------------------------------------------------------

@@ -11,7 +11,7 @@ from langchain_openai import ChatOpenAI
 from config.settings import LLM_MODEL, LLM_TEMPERATURE
 from models.state import (
     GraphState,
-    LearningResource,
+    TrainingPlan,
     TrainingStep,
 )
 
@@ -25,17 +25,14 @@ You will receive:
   priority).
 - Available learning resources grouped by type.
 
-Produce a JSON array of training steps.  Each step:
+Produce a list of training steps.  Each step:
 - **skill** – The skill to improve.
 - **priority** – Integer starting from 1 (most important first).  Order by
   gap priority (critical > high > medium > low) then gap size descending.
 - **estimated_hours** – Rough estimate of study hours needed.
 - **description** – 2-3 sentence actionable guidance on *how* to close the gap.
 - **resources** – Pick the 3-5 most relevant resources from the provided lists
-  for this skill.  Return them as objects with keys: title, url, source,
-  description.
-
-Return ONLY the JSON array, no markdown fences.
+  for this skill.  Each resource needs: title, url, source, description.
 """
 
 USER_PROMPT = """\
@@ -74,7 +71,7 @@ class TrainingPlannerAgent:
         self._llm = ChatOpenAI(
             model=LLM_MODEL,
             temperature=LLM_TEMPERATURE,
-        )
+        ).with_structured_output(TrainingPlan)
         self._prompt = ChatPromptTemplate.from_messages(
             [("system", SYSTEM_PROMPT), ("human", USER_PROMPT)]
         )
@@ -87,7 +84,7 @@ class TrainingPlannerAgent:
         )
 
         chain = self._prompt | self._llm
-        result = chain.invoke(
+        result: TrainingPlan = chain.invoke(
             {
                 "job_title": state.get("job_title", ""),
                 "software_domain": state.get("software_domain", ""),
@@ -96,35 +93,5 @@ class TrainingPlannerAgent:
             }
         )
 
-        raw_text = result.content if hasattr(result, "content") else str(result)
-        raw_text = raw_text.strip()
-        if raw_text.startswith("```"):
-            raw_text = raw_text.split("\n", 1)[1]
-        if raw_text.endswith("```"):
-            raw_text = raw_text.rsplit("```", 1)[0]
-
-        try:
-            steps_data = json.loads(raw_text)
-        except json.JSONDecodeError:
-            return {
-                "training_plan": [],
-                "error_message": "Failed to parse training plan from LLM.",
-            }
-
-        training_plan: list[TrainingStep] = []
-        for s in steps_data:
-            resources = [
-                LearningResource(**r) for r in s.get("resources", [])
-            ]
-            training_plan.append(
-                TrainingStep(
-                    skill=s.get("skill", ""),
-                    priority=s.get("priority", 99),
-                    estimated_hours=s.get("estimated_hours", 0),
-                    description=s.get("description", ""),
-                    resources=resources,
-                )
-            )
-
-        training_plan.sort(key=lambda t: t.priority)
+        training_plan = sorted(result.steps, key=lambda t: t.priority)
         return {"training_plan": training_plan}
