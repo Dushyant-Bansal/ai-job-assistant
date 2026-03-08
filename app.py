@@ -57,6 +57,25 @@ uploaded_file, job_description, analyze_clicked, ignore_programming_languages = 
 # ---------------------------------------------------------------------------
 result = None
 
+
+def _clear_override_state() -> None:
+    """Clear override-related session state when starting a fresh analysis."""
+    keys_to_remove = [
+        "override_keep_expanded",
+        "override_added_skills",
+        "override_domain",
+        "add_skill_name",
+        "add_skill_rating",
+    ]
+    for key in keys_to_remove:
+        if key in st.session_state:
+            del st.session_state[key]
+    # Clear widget state for override section (include_req_*, override_req_*, override_user_*)
+    for key in list(st.session_state.keys()):
+        if key.startswith(("include_req_", "override_req_", "override_user_", "remove_added_")):
+            del st.session_state[key]
+
+
 if analyze_clicked:
     try:
         resume_bytes = uploaded_file.read()
@@ -96,14 +115,23 @@ if analyze_clicked:
 
     result = {**final_state, "job_description": job_description}
     st.session_state["analysis_result"] = result
-    if "override_keep_expanded" in st.session_state:
-        del st.session_state["override_keep_expanded"]
+    _clear_override_state()
 
 elif "analysis_result" in st.session_state:
     result = st.session_state["analysis_result"]
+    # Invalidate cached result when job description has changed (dirty state)
+    cached_jd = (result.get("job_description") or "").strip()
+    current_jd = (job_description or "").strip()
+    if cached_jd != current_jd:
+        del st.session_state["analysis_result"]
+        _clear_override_state()
+        result = None
 
 if result is None:
-    st.info("Upload a resume and paste a job description to get started.")
+    if uploaded_file and job_description:
+        st.info("Job description has changed. Click **Analyze** to run a new analysis.")
+    else:
+        st.info("Upload a resume and paste a job description to get started.")
     st.stop()
 
 # ---------------------------------------------------------------------------
