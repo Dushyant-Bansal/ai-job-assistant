@@ -237,6 +237,15 @@ ai-job-assistant/
 
 ---
 
+## Future Directions
+
+- **Login with credentials** — e.g. Google auth for authenticated sessions
+- **Save projects on server** — store job description, skills analysis, training plan, and learning resources as a project with a unique name per user
+- **Load previous project** — restore a saved project from JSON
+- **Google Calendar integration** — add the training plan to the user's Google Calendar based on user-defined days and times
+
+---
+
 ## Generate Design Deck
 
 A PowerPoint deck describing the design, architecture, and testing can be generated:

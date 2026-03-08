@@ -368,6 +368,18 @@ def main() -> None:
         ],
     )
 
+    # Slide 10: Future Directions
+    add_content_slide(
+        prs,
+        "Future Directions",
+        [
+            "Login with credentials — e.g. Google auth for authenticated sessions",
+            "Save projects on server — store job description, skills analysis, training plan, and learning resources as a project with a unique name per user",
+            "Load previous project — restore a saved project from JSON",
+            "Google Calendar integration — add the training plan to the user's Google Calendar based on user-defined days and times",
+        ],
+    )
+
     out_path = Path(__file__).resolve().parent.parent / "AI_Job_Assistant_Design_Deck.pptx"
     prs.save(str(out_path))
     print(f"Saved: {out_path}")
