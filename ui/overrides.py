@@ -43,7 +43,9 @@ def render_override_section(
         if st.session_state.get(key) is False:
             st.session_state["override_keep_expanded"] = True
             break
-    expanded = st.session_state.get("override_keep_expanded", False)
+    # Default to expanded when we have results so it stays open while adding skills
+    has_results = bool(user_skills or required_skills)
+    expanded = st.session_state.get("override_keep_expanded", has_results)
     with st.expander("Override & Re-analyze", expanded=expanded):
         st.caption(
             "Adjust your skill ratings, the job's required skills, or remove skills that "
