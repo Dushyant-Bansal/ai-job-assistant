@@ -2,12 +2,47 @@
 
 from __future__ import annotations
 
+import json
 import logging
+from datetime import datetime
+
 import streamlit as st
 
 from config.settings import API_KEYS, missing_api_keys
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
+
+
+def _to_dict(obj):
+    """Convert Pydantic model or dict to JSON-serializable dict."""
+    if hasattr(obj, "model_dump"):
+        return obj.model_dump()
+    if isinstance(obj, dict):
+        return {k: _to_dict(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_to_dict(v) for v in obj]
+    return obj
+
+
+def build_export_json(result: dict) -> str:
+    """Build structured JSON for export."""
+    export = {
+        "job_description": result.get("job_description", ""),
+        "match_score": result.get("match_percentage", 0),
+        "job_title": result.get("job_title", ""),
+        "domain": result.get("software_domain", ""),
+        "skill_gaps": _to_dict(result.get("skill_gaps", [])),
+        "training_plan": _to_dict(result.get("training_plan", [])),
+        "learning_resources": {
+            "web_articles": _to_dict(result.get("web_articles", [])),
+            "news_articles": _to_dict(result.get("news_articles", [])),
+            "blog_posts": _to_dict(result.get("blog_posts", [])),
+            "youtube_videos": _to_dict(result.get("youtube_videos", [])),
+            "amazon_books": _to_dict(result.get("amazon_books", [])),
+            "training_courses": _to_dict(result.get("training_courses", [])),
+        },
+    }
+    return json.dumps(export, indent=2)
 from graph.builder import build_graph, build_recompute_graph
 from parsers.file_parser import parse_resume
 from ui.overrides import render_override_section
@@ -90,7 +125,7 @@ if analyze_clicked:
         st.error(final_state["error_message"])
         st.stop()
 
-    result = final_state
+    result = {**final_state, "job_description": job_description}
     st.session_state["analysis_result"] = result
     if "override_keep_expanded" in st.session_state:
         del st.session_state["override_keep_expanded"]
@@ -157,6 +192,16 @@ if override_result:
 # ---------------------------------------------------------------------------
 st.divider()
 render_match_score(result)
+job_title = result.get("job_title", "analysis") or "analysis"
+safe_name = "".join(c if c.isalnum() or c in " -_" else "_" for c in job_title)[:50]
+filename = f"job-analysis-{safe_name}-{datetime.now().strftime('%Y%m%d-%H%M')}.json"
+st.download_button(
+    "Export as JSON",
+    data=build_export_json(result),
+    file_name=filename,
+    mime="application/json",
+    key="export_json_btn",
+)
 st.divider()
 render_skill_chart(result, required_skills_override=effective_required_skills)
 st.divider()

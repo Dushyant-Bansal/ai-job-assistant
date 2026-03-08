@@ -68,6 +68,62 @@ def render_override_section(
                     )
                     user_overrides[skill.name] = val
 
+        # Add new skills (in case LLM missed them)
+        st.subheader("Add skill (if missed)")
+        st.caption("Add a skill the resume analysis may have missed.")
+        if "override_added_skills" not in st.session_state:
+            st.session_state["override_added_skills"] = []
+        added_skills: list[Skill] = st.session_state["override_added_skills"]
+
+        add_col1, add_col2, add_col3 = st.columns([2, 1, 1])
+        with add_col1:
+            new_skill_name = st.text_input(
+                "Skill name",
+                placeholder="e.g. Kubernetes",
+                key="add_skill_name",
+            )
+        with add_col2:
+            new_skill_rating = st.number_input(
+                "Rating",
+                min_value=1,
+                max_value=100,
+                value=50,
+                key="add_skill_rating",
+            )
+        with add_col3:
+            add_clicked = st.button("Add", key="add_skill_btn")
+
+        if add_clicked and new_skill_name and new_skill_name.strip():
+            name = new_skill_name.strip()
+            existing_names = {s.name for s in user_skills_list} | {s.name for s in added_skills}
+            if name not in existing_names:
+                added_skills.append(
+                    Skill(
+                        name=name,
+                        category="technical",
+                        rating=new_skill_rating,
+                        years_experience=None,
+                        depth_signal="",
+                    )
+                )
+                st.session_state["override_added_skills"] = added_skills
+                st.session_state["override_keep_expanded"] = True
+                st.rerun()
+            else:
+                st.warning(f"Skill '{name}' already exists.")
+
+        if added_skills:
+            st.caption("Added skills (included in re-analysis):")
+            for i, skill in enumerate(added_skills):
+                col1, col2 = st.columns([4, 1])
+                with col1:
+                    st.markdown(f"- **{skill.name}** ({skill.rating})")
+                with col2:
+                    if st.button("Remove", key=f"remove_added_{i}_{skill.name}"):
+                        added_skills.pop(i)
+                        st.session_state["override_added_skills"] = added_skills
+                        st.rerun()
+
         req_skills_list = [_to_skill(s) for s in required_skills] if required_skills else []
         req_overrides: dict[str, int] = {}
         req_included: dict[str, bool] = {}
@@ -145,6 +201,11 @@ def render_override_section(
         )
         for s in user_skills_list
     ]
+    # Merge in user-added skills
+    overridden_user.extend(added_skills)
+    # Clear added skills after re-analyze (they're now in user_skills)
+    if "override_added_skills" in st.session_state:
+        del st.session_state["override_added_skills"]
 
     overridden_required = effective_required
 
