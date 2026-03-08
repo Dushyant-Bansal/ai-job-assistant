@@ -139,7 +139,7 @@ The app opens at **http://localhost:8501**.
 
 1. Upload your resume (PDF, DOCX, or TXT) in the sidebar.
 2. Paste the full job description into the text area.
-3. Optionally enable **Ignore programming languages** to focus on non-PL gaps.
+3. Optionally enable **Ignore programming languages** to focus on non-programming-language gaps.
 4. Click **Analyze**.
 5. Review your match score, skill comparison chart, identified gaps, and the generated training plan with curated resources across six tabs (Web, News, YouTube, Books, Courses, Blog).
 6. Use **Add skill** to include skills the analyzer may have missed, then **Re-analyze**.
@@ -234,6 +234,23 @@ ai-job-assistant/
 ├── requirements.txt
 └── .env.example
 ```
+
+---
+
+## Debug Output
+
+A collapsible **Debug: resource counts & search inputs** expander at the bottom of the UI shows:
+
+| Output | Description |
+|--------|-------------|
+| **skill_gaps, required_skills, required_skills_for_resources** | Counts for each; helps verify the fallback chain when "ignore programming languages" filters everything |
+| **Skills sent to search** | Which skills were used for Tavily/YouTube queries (or the fallback: domain or "software engineering") |
+| **Sample web query** | Example query string sent to search APIs |
+| **Resource counts** | Item counts for web_articles, news_articles, blog_posts, youtube_videos, amazon_books, training_courses |
+
+**Troubleshooting tips** (shown in the expander): when counts are 0, check API keys in `.env`, terminal for API errors, and that skill_gaps/required_skills are populated.
+
+**Development use:** This debug output helped troubleshoot learning resources not showing, Tavily returning 0 results, empty skill_gaps when ignoring programming languages, and API error diagnosis.
 
 ---
 

@@ -361,14 +361,28 @@ def main() -> None:
             "Chart not reflecting skill matches — added _skill_canonical() for chart lookups",
             "Tavily returning 0 — surface API errors in resource_search_warnings",
             "Token limit (429) — truncate JD to 15,000 chars",
-            "Empty skill_gaps when ignoring PLs — added required_skills_for_resources fallback",
+            "Empty skill_gaps when ignoring programming languages — added required_skills_for_resources fallback",
             "Add skill to resume — human-in-the-loop override UI with Add/Remove, re-analyze from normalize_skills",
             "Export as JSON — build_export_json, download button",
             "Privacy note — displayed in sidebar",
         ],
     )
 
-    # Slide 10: Future Directions
+    # Slide 10: Debug Output
+    add_content_slide(
+        prs,
+        "Debug Output (expander at bottom of UI)",
+        [
+            "skill_gaps, required_skills, required_skills_for_resources — counts for each",
+            "Skills sent to search — which skills were used for resource queries (or fallback)",
+            "Sample web query — example Tavily/YouTube query string",
+            "Resource counts — web_articles, news, blog, youtube, amazon, courses",
+            "Troubleshooting help: when counts are 0, check API keys and skill population",
+            "Helped debug: learning resources not showing, Tavily returning 0, empty skill_gaps when ignoring programming languages, API errors",
+        ],
+    )
+
+    # Slide 11: Future Directions
     add_content_slide(
         prs,
         "Future Directions",
