@@ -37,7 +37,14 @@ def render_override_section(
     - override_result: (user_skills, required_skills, domain) if Re-analyze clicked, else None.
     - effective_required_skills: required skills currently included (for chart display).
     """
-    with st.expander("Override & Re-analyze", expanded=True):
+    req_skills_list = [_to_skill(s) for s in required_skills] if required_skills else []
+    for i, skill in enumerate(req_skills_list):
+        key = f"include_req_{i}_{skill.name}"
+        if st.session_state.get(key) is False:
+            st.session_state["override_keep_expanded"] = True
+            break
+    expanded = st.session_state.get("override_keep_expanded", False)
+    with st.expander("Override & Re-analyze", expanded=expanded):
         st.caption(
             "Adjust your skill ratings, the job's required skills, or remove skills that "
             "don't seem necessary. Then re-run the analysis."

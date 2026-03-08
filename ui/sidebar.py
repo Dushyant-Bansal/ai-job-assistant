@@ -35,6 +35,13 @@ def render_sidebar() -> tuple:
             placeholder="Paste the full job description here …",
         )
 
+        st.subheader("3. Options")
+        ignore_programming_languages = st.checkbox(
+            "Ignore programming language requirements",
+            value=False,
+            help="Exclude programming languages (Python, Java, etc.) from the job's required skills when comparing.",
+        )
+
         st.divider()
         analyze_clicked = st.button(
             "Analyze",
@@ -43,4 +50,4 @@ def render_sidebar() -> tuple:
             disabled=not (uploaded_file and job_description),
         )
 
-    return uploaded_file, job_description, analyze_clicked
+    return uploaded_file, job_description, analyze_clicked, ignore_programming_languages

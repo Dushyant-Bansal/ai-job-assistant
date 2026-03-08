@@ -43,7 +43,7 @@ if missing_keys:
 # ---------------------------------------------------------------------------
 # Sidebar inputs
 # ---------------------------------------------------------------------------
-uploaded_file, job_description, analyze_clicked = render_sidebar()
+uploaded_file, job_description, analyze_clicked, ignore_programming_languages = render_sidebar()
 
 # ---------------------------------------------------------------------------
 # Run the analysis pipeline (full or recompute with overrides)
@@ -68,15 +68,18 @@ if analyze_clicked:
     with status_container:
         final_state = {}
         for event in graph.stream(
-            {"resume_text": resume_text, "job_description": job_description},
+            {
+                "resume_text": resume_text,
+                "job_description": job_description,
+                "ignore_programming_languages": ignore_programming_languages,
+            },
             stream_mode="updates",
         ):
-            node_name = list(event.keys())[0]
-            readable = node_name.replace("_", " ").title()
-            st.write(f"Running: **{readable}** …")
-            node_output = event[node_name]
-            if node_output:
-                final_state.update(node_output)
+            for node_name, node_output in event.items():
+                readable = node_name.replace("_", " ").title()
+                st.write(f"Running: **{readable}** …")
+                if node_output:
+                    final_state.update(node_output)
 
     status_container.update(label="Analysis complete", state="complete")
 
@@ -86,6 +89,8 @@ if analyze_clicked:
 
     result = final_state
     st.session_state["analysis_result"] = result
+    if "override_keep_expanded" in st.session_state:
+        del st.session_state["override_keep_expanded"]
 
 elif "analysis_result" in st.session_state:
     result = st.session_state["analysis_result"]
@@ -125,18 +130,18 @@ if override_result:
     initial_state["user_skills"] = overridden_user_skills
     initial_state["required_skills"] = overridden_required_skills
     initial_state["software_domain"] = new_domain
+    initial_state["ignore_programming_languages"] = ignore_programming_languages
 
     st.divider()
     with st.status("Re-analyzing with overrides …", expanded=True):
         recompute_graph = build_recompute_graph()
         new_state = {}
         for event in recompute_graph.stream(initial_state, stream_mode="updates"):
-            node_name = list(event.keys())[0]
-            readable = node_name.replace("_", " ").title()
-            st.write(f"Running: **{readable}** …")
-            node_output = event[node_name]
-            if node_output:
-                new_state.update(node_output)
+            for node_name, node_output in event.items():
+                readable = node_name.replace("_", " ").title()
+                st.write(f"Running: **{readable}** …")
+                if node_output:
+                    new_state.update(node_output)
 
     result = {**result, **new_state}
     st.session_state["analysis_result"] = result

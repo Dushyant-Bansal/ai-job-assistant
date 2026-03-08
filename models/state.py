@@ -97,6 +97,7 @@ class GraphState(TypedDict, total=False):
     # Inputs
     resume_text: str
     job_description: str
+    ignore_programming_languages: bool
 
     # Resume analysis
     user_skills: list[Skill]
@@ -110,6 +111,7 @@ class GraphState(TypedDict, total=False):
     software_domain: str
 
     # Matching
+    skill_canonical_map: dict[str, str]
     match_percentage: float
     skill_gaps: list[SkillGap]
 

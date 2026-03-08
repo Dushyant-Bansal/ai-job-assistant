@@ -6,7 +6,11 @@ so they can run in parallel via LangGraph fan-out without conflicts.
 
 from __future__ import annotations
 
+import logging
+
 from config.settings import MAX_SKILLS_TO_SEARCH
+
+logger = logging.getLogger(__name__)
 from models.state import GraphState, LearningResource
 from tools.amazon_tool import AmazonBookSearchTool
 from tools.course_tools import CourseSearchTool
@@ -44,7 +48,12 @@ class WebArticleSearchAgent:
     def run(self, state: GraphState) -> dict:
         skills = _top_gap_skill_names(state)
         domain = state.get("software_domain", "")
+        if not skills:
+            logger.warning(
+                "WebArticleSearchAgent: no skills to search (skill_gaps and required_skills empty)"
+            )
         articles = self._tool.search_web_articles(skills, domain)
+        logger.info("WebArticleSearchAgent: found %d web articles for %d skills", len(articles), len(skills))
         return {"web_articles": articles}
 
 

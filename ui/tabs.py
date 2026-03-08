@@ -7,14 +7,34 @@ import streamlit as st
 from models.state import GraphState, LearningResource
 
 
-def _render_resource_list(resources: list[LearningResource]) -> None:
+def _get_title(r: LearningResource | dict) -> str:
+    return r.title if hasattr(r, "title") else r.get("title", "")
+
+
+def _get_url(r: LearningResource | dict) -> str:
+    return r.url if hasattr(r, "url") else r.get("url", "")
+
+
+def _get_description(r: LearningResource | dict) -> str:
+    return r.description if hasattr(r, "description") else r.get("description", "")
+
+
+def _get_source(r: LearningResource | dict) -> str:
+    return r.source if hasattr(r, "source") else r.get("source", "")
+
+
+def _render_resource_list(resources: list[LearningResource] | list[dict]) -> None:
     if not resources:
         st.info("No resources found for this category.")
         return
     for r in resources:
-        st.markdown(f"**[{r.title}]({r.url})**")
-        if r.description:
-            st.caption(r.description)
+        title, url = _get_title(r), _get_url(r)
+        if not url:
+            continue
+        st.markdown(f"**[{title or 'Untitled'}]({url})**")
+        desc = _get_description(r)
+        if desc:
+            st.caption(desc)
 
 
 def render_resource_tabs(state: GraphState) -> None:

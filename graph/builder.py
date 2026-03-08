@@ -16,6 +16,7 @@ from graph.nodes.resource_finder import (
 )
 from graph.nodes.resume_analyzer import ResumeAnalyzerAgent
 from graph.nodes.skill_matcher import SkillMatcherAgent
+from graph.nodes.skill_normalizer import SkillNormalizerAgent
 from graph.nodes.training_planner import TrainingPlannerAgent
 
 # ---------------------------------------------------------------------------
@@ -23,6 +24,7 @@ from graph.nodes.training_planner import TrainingPlannerAgent
 # ---------------------------------------------------------------------------
 _resume_agent = ResumeAnalyzerAgent()
 _jd_agent = JDAnalyzerAgent()
+_normalizer_agent = SkillNormalizerAgent()
 _matcher_agent = SkillMatcherAgent()
 _web_agent = WebArticleSearchAgent()
 _news_agent = NewsSearchAgent()
@@ -53,6 +55,10 @@ def validate_industry(state: GraphState) -> dict:
             )
         }
     return {}
+
+
+def normalize_skills(state: GraphState) -> dict:
+    return _normalizer_agent.run(state)
 
 
 def match_skills(state: GraphState) -> dict:
@@ -105,6 +111,7 @@ def build_graph():
     graph.add_node("parse_resume", parse_resume)
     graph.add_node("analyze_jd", analyze_jd)
     graph.add_node("validate_industry", validate_industry)
+    graph.add_node("normalize_skills", normalize_skills)
     graph.add_node("match_skills", match_skills)
     graph.add_node("search_web_articles", search_web_articles)
     graph.add_node("search_news", search_news)
@@ -122,8 +129,9 @@ def build_graph():
     graph.add_conditional_edges(
         "validate_industry",
         _route_after_validation,
-        {"continue": "match_skills", "stop": END},
+        {"continue": "normalize_skills", "stop": END},
     )
+    graph.add_edge("normalize_skills", "match_skills")
 
     # Fan-out: after matching, search all resource types in parallel
     graph.add_edge("match_skills", "search_web_articles")
@@ -147,7 +155,7 @@ def build_graph():
 
 
 def build_recompute_graph():
-    """Builds a graph that runs from match_skills onward.
+    """Builds a graph that runs from normalize_skills onward.
 
     Used when the user provides overrides (skill ratings, domain). Expects
     initial state to already contain user_skills, required_skills, job_title,
@@ -155,6 +163,7 @@ def build_recompute_graph():
     """
     graph = StateGraph(GraphState)
 
+    graph.add_node("normalize_skills", normalize_skills)
     graph.add_node("match_skills", match_skills)
     graph.add_node("search_web_articles", search_web_articles)
     graph.add_node("search_news", search_news)
@@ -164,7 +173,8 @@ def build_recompute_graph():
     graph.add_node("search_blog_posts", search_blog_posts)
     graph.add_node("generate_training_plan", generate_training_plan)
 
-    graph.set_entry_point("match_skills")
+    graph.set_entry_point("normalize_skills")
+    graph.add_edge("normalize_skills", "match_skills")
     graph.add_edge("match_skills", "search_web_articles")
     graph.add_edge("match_skills", "search_news")
     graph.add_edge("match_skills", "search_youtube")
