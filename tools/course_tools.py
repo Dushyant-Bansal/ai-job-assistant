@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import logging
+
 from tavily import TavilyClient
 
 from config.settings import TAVILY_API_KEY, MAX_RESOURCE_RESULTS_PER_SKILL
 from models.state import LearningResource
+
+logger = logging.getLogger(__name__)
 
 COURSE_PLATFORMS = [
     ("oreilly", "site:oreilly.com"),
@@ -26,20 +30,22 @@ class CourseSearchTool:
         self,
         skill_names: list[str],
         domain: str = "",
-    ) -> list[LearningResource]:
+    ) -> tuple[list[LearningResource], str | None]:
         resources: list[LearningResource] = []
+        first_error: str | None = None
         for skill in skill_names:
             for platform_name, site_filter in COURSE_PLATFORMS:
                 query = f"{site_filter} course {skill}"
                 if domain:
                     query += f" {domain}"
                 try:
-                    results = self._client.search(
+                    raw = self._client.search(
                         query,
                         search_depth="basic",
                         max_results=MAX_RESOURCE_RESULTS_PER_SKILL,
                     )
-                    for r in results.get("results", []):
+                    items = raw.get("results", []) if isinstance(raw, dict) else getattr(raw, "results", [])
+                    for r in items:
                         resources.append(
                             LearningResource(
                                 title=r.get("title", ""),
@@ -48,6 +54,8 @@ class CourseSearchTool:
                                 description=(r.get("content", "") or "")[:300],
                             )
                         )
-                except Exception:
-                    continue
-        return resources
+                except Exception as e:
+                    if first_error is None:
+                        first_error = str(e)
+                    logger.warning("Tavily course search failed for %r: %s", query, e)
+        return resources, first_error

@@ -71,11 +71,13 @@ class JDAnalyzerAgent:
                 "software_domains": ", ".join(SOFTWARE_DOMAINS),
             }
         )
+        skills = result.required_skills
         return {
             "job_title": result.job_title,
             "experience_years": result.experience_years,
             "industry": result.industry,
             "is_software_job": result.is_software_job,
             "software_domain": result.software_domain,
-            "required_skills": result.required_skills,
+            "required_skills": skills,
+            "required_skills_for_resources": skills,
         }

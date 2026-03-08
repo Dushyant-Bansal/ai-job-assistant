@@ -1,7 +1,7 @@
 # AI Job Training Assistant
 
-An AI-powered tool that analyses your resume against a software engineering job
-description, identifies skill gaps, and generates a personalised training plan
+An AI-powered tool that analyzes your resume against a software engineering job
+description, identifies skill gaps, and generates a personalized training plan
 with curated learning resources.
 
 ## Features

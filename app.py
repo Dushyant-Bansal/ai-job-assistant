@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 import streamlit as st
 
 from config.settings import API_KEYS, missing_api_keys
+
+logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
 from graph.builder import build_graph, build_recompute_graph
 from parsers.file_parser import parse_resume
 from ui.overrides import render_override_section
@@ -122,6 +125,7 @@ if override_result:
         "training_courses",
         "blog_posts",
         "training_plan",
+        "resource_search_warnings",
     }
     initial_state = {
         k: v for k, v in result.items()
@@ -129,6 +133,7 @@ if override_result:
     }
     initial_state["user_skills"] = overridden_user_skills
     initial_state["required_skills"] = overridden_required_skills
+    initial_state["required_skills_for_resources"] = overridden_required_skills
     initial_state["software_domain"] = new_domain
     initial_state["ignore_programming_languages"] = ignore_programming_languages
 
@@ -159,9 +164,36 @@ render_skill_gaps(result.get("skill_gaps", []))
 st.divider()
 render_training_plan(result.get("training_plan", []))
 st.divider()
+warnings = result.get("resource_search_warnings", [])
+if warnings:
+    for w in warnings:
+        st.warning(w)
+st.divider()
 render_resource_tabs(result)
 
-with st.expander("Debug: resource counts", expanded=False):
+with st.expander("Debug: resource counts & search inputs", expanded=True):
+    def _skill_name(s):
+        return s.name if hasattr(s, "name") else s.get("name", "")
+    gaps = result.get("skill_gaps", [])
+    req = result.get("required_skills", [])
+    req_for_res = result.get("required_skills_for_resources", [])
+    if gaps:
+        skills_used = [g.skill_name if hasattr(g, "skill_name") else g.get("skill_name", "") for g in gaps[:5]]
+    elif req:
+        skills_used = [_skill_name(s) for s in req[:5]]
+    elif req_for_res:
+        skills_used = [_skill_name(s) for s in req_for_res[:5]]
+    else:
+        skills_used = []
+    domain = result.get("software_domain", "")
+    st.write("**skill_gaps:**", len(gaps), "| **required_skills:**", len(req), "| **required_skills_for_resources:**", len(req_for_res))
+    st.write("**Skills sent to search:**", skills_used if skills_used else "_none (fallback: domain or 'software engineering')_")
+    if skills_used:
+        sample_query = f"{skills_used[0]} tutorial guide software engineering"
+        if domain:
+            sample_query += f" {domain}"
+        st.write("**Sample web query:**", f"`{sample_query}`")
+    st.write("---")
     resource_keys = [
         "web_articles",
         "news_articles",
@@ -175,6 +207,6 @@ with st.expander("Debug: resource counts", expanded=False):
         count = len(val) if isinstance(val, list) else "?"
         st.write(f"**{key}**: {count} items")
     st.caption(
-        "If counts are 0: check API keys (Tavily, YouTube), skill_gaps/required_skills, "
-        "and terminal logs for warnings."
+        "If counts are 0: check API keys (Tavily, YouTube) in .env, terminal for API errors, "
+        "and that skill_gaps/required_skills are populated."
     )

@@ -40,6 +40,11 @@ def _top_gap_skill_names(state: GraphState) -> list[str]:
     names = [_skill_name(s) for s in required[:MAX_SKILLS_TO_SEARCH]]
     if names:
         return names
+    # required_skills may be empty when "ignore programming languages" filtered all
+    required_for_resources = state.get("required_skills_for_resources", [])
+    names = [_skill_name(s) for s in required_for_resources[:MAX_SKILLS_TO_SEARCH]]
+    if names:
+        return names
     # Both empty — use domain or generic so we still return resources
     domain = state.get("software_domain", "").strip()
     if domain:
@@ -60,9 +65,12 @@ class WebArticleSearchAgent:
             logger.warning(
                 "WebArticleSearchAgent: no skills to search (skill_gaps and required_skills empty)"
             )
-        articles = self._tool.search_web_articles(skills, domain)
+        articles, err = self._tool.search_web_articles(skills, domain)
         logger.info("WebArticleSearchAgent: found %d web articles for %d skills", len(articles), len(skills))
-        return {"web_articles": articles}
+        out: dict = {"web_articles": articles, "search_skills_used": skills}
+        if err:
+            out["resource_search_warnings"] = [f"Tavily (web): {err}"]
+        return out
 
 
 class NewsSearchAgent:
@@ -74,8 +82,11 @@ class NewsSearchAgent:
     def run(self, state: GraphState) -> dict:
         skills = _top_gap_skill_names(state)
         domain = state.get("software_domain", "")
-        articles = self._tool.search_news(skills, domain)
-        return {"news_articles": articles}
+        articles, err = self._tool.search_news(skills, domain)
+        out: dict = {"news_articles": articles}
+        if err:
+            out["resource_search_warnings"] = [f"Tavily (news): {err}"]
+        return out
 
 
 class YouTubeSearchAgent:
@@ -100,8 +111,11 @@ class AmazonBookSearchAgent:
     def run(self, state: GraphState) -> dict:
         skills = _top_gap_skill_names(state)
         domain = state.get("software_domain", "")
-        books = self._tool.search(skills, domain)
-        return {"amazon_books": books}
+        books, err = self._tool.search(skills, domain)
+        out: dict = {"amazon_books": books}
+        if err:
+            out["resource_search_warnings"] = [f"Tavily (Amazon): {err}"]
+        return out
 
 
 class CourseSearchAgent:
@@ -113,8 +127,11 @@ class CourseSearchAgent:
     def run(self, state: GraphState) -> dict:
         skills = _top_gap_skill_names(state)
         domain = state.get("software_domain", "")
-        courses = self._tool.search(skills, domain)
-        return {"training_courses": courses}
+        courses, err = self._tool.search(skills, domain)
+        out: dict = {"training_courses": courses}
+        if err:
+            out["resource_search_warnings"] = [f"Tavily (courses): {err}"]
+        return out
 
 
 class BlogSearchAgent:
@@ -126,5 +143,8 @@ class BlogSearchAgent:
     def run(self, state: GraphState) -> dict:
         skills = _top_gap_skill_names(state)
         domain = state.get("software_domain", "")
-        posts = self._tool.search_blog_posts(skills, domain)
-        return {"blog_posts": posts}
+        posts, err = self._tool.search_blog_posts(skills, domain)
+        out: dict = {"blog_posts": posts}
+        if err:
+            out["resource_search_warnings"] = [f"Tavily (blog): {err}"]
+        return out

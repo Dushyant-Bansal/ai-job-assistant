@@ -93,6 +93,20 @@ def _merge_resources(
     return merged
 
 
+def _merge_warnings(
+    existing: list[str],
+    new: list[str],
+) -> list[str]:
+    """Reducer that merges warning lists without duplicates."""
+    seen = set(existing)
+    merged = list(existing)
+    for w in new:
+        if w not in seen:
+            merged.append(w)
+            seen.add(w)
+    return merged
+
+
 class GraphState(TypedDict, total=False):
     # Inputs
     resume_text: str
@@ -104,6 +118,7 @@ class GraphState(TypedDict, total=False):
 
     # JD analysis
     required_skills: list[Skill]
+    required_skills_for_resources: list[Skill]  # Unfiltered; used when required_skills is empty (e.g. after PL filter)
     job_title: str
     experience_years: int | None
     industry: str
@@ -126,3 +141,4 @@ class GraphState(TypedDict, total=False):
     # Output
     training_plan: list[TrainingStep]
     error_message: str | None
+    resource_search_warnings: Annotated[list[str], _merge_warnings]
