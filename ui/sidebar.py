@@ -27,13 +27,14 @@ def render_sidebar() -> tuple:
             type=["pdf", "docx", "txt"],
             help="Upload your resume so we can extract your skills.",
         )
-
         st.subheader("2. Paste the job description")
         job_description = st.text_area(
             "Job description",
             height=300,
             placeholder="Paste the full job description here …",
         )
+
+        st.info("**Privacy:** Your resume and job description are not stored on any server.")
 
         st.subheader("3. Options")
         ignore_programming_languages = st.checkbox(
