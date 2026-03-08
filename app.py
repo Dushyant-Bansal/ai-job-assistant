@@ -160,3 +160,21 @@ st.divider()
 render_training_plan(result.get("training_plan", []))
 st.divider()
 render_resource_tabs(result)
+
+with st.expander("Debug: resource counts", expanded=False):
+    resource_keys = [
+        "web_articles",
+        "news_articles",
+        "blog_posts",
+        "youtube_videos",
+        "amazon_books",
+        "training_courses",
+    ]
+    for key in resource_keys:
+        val = result.get(key, [])
+        count = len(val) if isinstance(val, list) else "?"
+        st.write(f"**{key}**: {count} items")
+    st.caption(
+        "If counts are 0: check API keys (Tavily, YouTube), skill_gaps/required_skills, "
+        "and terminal logs for warnings."
+    )

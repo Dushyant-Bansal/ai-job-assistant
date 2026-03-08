@@ -27,6 +27,7 @@ def _top_gap_skill_names(state: GraphState) -> list[str]:
     """Return the names of the top-N skills with the biggest gaps.
 
     Falls back to required_skills when there are no gaps (e.g. perfect match).
+    Falls back to software_domain or generic query when both are empty.
     """
     gaps = state.get("skill_gaps", [])
     if gaps:
@@ -36,7 +37,14 @@ def _top_gap_skill_names(state: GraphState) -> list[str]:
         ]
     # No gaps — use top required skills so we still get resources
     required = state.get("required_skills", [])
-    return [_skill_name(s) for s in required[:MAX_SKILLS_TO_SEARCH]]
+    names = [_skill_name(s) for s in required[:MAX_SKILLS_TO_SEARCH]]
+    if names:
+        return names
+    # Both empty — use domain or generic so we still return resources
+    domain = state.get("software_domain", "").strip()
+    if domain:
+        return [domain]
+    return ["software engineering"]
 
 
 class WebArticleSearchAgent:

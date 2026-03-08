@@ -65,18 +65,20 @@ def render_resource_tabs(state: GraphState) -> None:
             st.info("No videos found.")
         else:
             for v in videos:
+                url = _get_url(v)
                 col1, col2 = st.columns([1, 3])
                 with col1:
-                    video_id = v.url.split("v=")[-1] if "v=" in v.url else ""
+                    video_id = url.split("v=")[-1] if "v=" in url else ""
                     if video_id:
                         st.image(
                             f"https://img.youtube.com/vi/{video_id}/mqdefault.jpg",
                             use_container_width=True,
                         )
                 with col2:
-                    st.markdown(f"**[{v.title}]({v.url})**")
-                    if v.description:
-                        st.caption(v.description)
+                    st.markdown(f"**[{_get_title(v) or 'Untitled'}]({url})**")
+                    desc = _get_description(v)
+                    if desc:
+                        st.caption(desc)
 
     with tabs[4]:
         _render_resource_list(state.get("amazon_books", []))
@@ -86,11 +88,12 @@ def render_resource_tabs(state: GraphState) -> None:
         if not courses:
             st.info("No courses found.")
         else:
-            platforms = sorted({c.source for c in courses})
+            platforms = sorted({_get_source(c) for c in courses})
             for platform in platforms:
                 st.markdown(f"#### {platform.title()}")
                 for c in courses:
-                    if c.source == platform:
-                        st.markdown(f"- [{c.title}]({c.url})")
-                        if c.description:
-                            st.caption(c.description)
+                    if _get_source(c) == platform:
+                        st.markdown(f"- [{_get_title(c) or 'Untitled'}]({_get_url(c)})")
+                        desc = _get_description(c)
+                        if desc:
+                            st.caption(desc)
