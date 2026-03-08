@@ -15,10 +15,6 @@ def _get_url(r: LearningResource | dict) -> str:
     return r.url if hasattr(r, "url") else r.get("url", "")
 
 
-def _get_description(r: LearningResource | dict) -> str:
-    return r.description if hasattr(r, "description") else r.get("description", "")
-
-
 def _get_source(r: LearningResource | dict) -> str:
     return r.source if hasattr(r, "source") else r.get("source", "")
 
@@ -32,9 +28,6 @@ def _render_resource_list(resources: list[LearningResource] | list[dict]) -> Non
         if not url:
             continue
         st.markdown(f"**[{title or 'Untitled'}]({url})**")
-        desc = _get_description(r)
-        if desc:
-            st.caption(desc)
 
 
 def render_resource_tabs(state: GraphState) -> None:
@@ -76,9 +69,6 @@ def render_resource_tabs(state: GraphState) -> None:
                         )
                 with col2:
                     st.markdown(f"**[{_get_title(v) or 'Untitled'}]({url})**")
-                    desc = _get_description(v)
-                    if desc:
-                        st.caption(desc)
 
     with tabs[4]:
         _render_resource_list(state.get("amazon_books", []))
@@ -94,6 +84,3 @@ def render_resource_tabs(state: GraphState) -> None:
                 for c in courses:
                     if _get_source(c) == platform:
                         st.markdown(f"- [{_get_title(c) or 'Untitled'}]({_get_url(c)})")
-                        desc = _get_description(c)
-                        if desc:
-                            st.caption(desc)
