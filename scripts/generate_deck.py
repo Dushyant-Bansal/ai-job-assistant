@@ -100,7 +100,11 @@ def add_content_slide(prs: Presentation, title: str, bullets: list[str]) -> None
             p = tf.paragraphs[0]
         else:
             p = tf.add_paragraph()
-        p.text = bullet
+        # Ensure bullet prefix for list items
+        text = bullet.strip()
+        if text and not text.startswith("•") and not text.startswith("-"):
+            text = "• " + text
+        p.text = text
         p.font.size = Pt(16)
         p.font.name = FONT_BODY
         p.font.color.rgb = COLOR_SLATE
@@ -267,11 +271,11 @@ def main() -> None:
             "AI-powered tool that compares a resume to a software job description.",
             "Identifies skill gaps and suggests personalized learning resources.",
             "Key capabilities:",
-            "  • Resume analysis — extracts technical & soft skills, rates 1–100",
-            "  • Job description analysis — required skills, industry, domain",
-            "  • Skill matching — weighted match %, gap detection",
-            "  • Resource discovery — web, news, YouTube, books, courses",
-            "  • Training plan — prioritized, actionable study plan",
+            "Resume analysis — extracts technical & soft skills, rates 1–100",
+            "Job description analysis — required skills, industry, domain",
+            "Skill matching — weighted match %, gap detection",
+            "Resource discovery — web, news, YouTube, books, courses",
+            "Training plan — prioritized, actionable study plan",
         ],
     )
 
@@ -347,7 +351,7 @@ def main() -> None:
         ],
     )
 
-    # Slide 9: Iterative Manual Testing & Fixes
+    # Slide 9: Iterative Manual Testing & Code Updates (combined)
     add_content_slide(
         prs,
         "Iterative Manual Testing & Code Updates",
@@ -358,18 +362,9 @@ def main() -> None:
             "Tavily returning 0 — surface API errors in resource_search_warnings",
             "Token limit (429) — truncate JD to 15,000 chars",
             "Empty skill_gaps when ignoring PLs — added required_skills_for_resources fallback",
-        ],
-    )
-
-    # Slide 10: Additional Iterations
-    add_content_slide(
-        prs,
-        "Additional Iterations (continued)",
-        [
             "Add skill to resume — override UI with Add/Remove, re-analyze from normalize_skills",
             "Export as JSON — build_export_json, download button",
             "Privacy note — displayed in sidebar",
-            "Job description via URL — URL input, fetch & parse (truncation applied)",
         ],
     )
 

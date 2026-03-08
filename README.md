@@ -138,7 +138,7 @@ The app opens at **http://localhost:8501**.
 ## Usage
 
 1. Upload your resume (PDF, DOCX, or TXT) in the sidebar.
-2. Paste the full job description into the text area (or provide a URL to fetch it).
+2. Paste the full job description into the text area.
 3. Optionally enable **Ignore programming languages** to focus on non-PL gaps.
 4. Click **Analyze**.
 5. Review your match score, skill comparison chart, identified gaps, and the generated training plan with curated resources across six tabs (Web, News, YouTube, Books, Courses, Blog).
