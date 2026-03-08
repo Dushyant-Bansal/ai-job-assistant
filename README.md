@@ -91,6 +91,30 @@ The app opens at **http://localhost:8501**.
 4. Review your match score, skill comparison chart, identified gaps, and the
    generated training plan with curated resources across five tabs.
 
+## Testing
+
+### Unit tests
+
+```bash
+pytest tests/ -v
+```
+
+### LLM-as-a-judge eval tests
+
+Eval tests use an LLM to judge whether analysis outputs (skill gaps, training plan) are
+reasonable given the job description. Requires `OPENAI_API_KEY`.
+
+```bash
+# Run all tests including evals
+pytest tests/ -v
+
+# Skip eval tests (no API key needed)
+SKIP_EVALS=1 pytest tests/ -v
+
+# On Windows PowerShell:
+# $env:SKIP_EVALS=1; pytest tests/ -v
+```
+
 ## Project structure
 
 ```
@@ -119,6 +143,15 @@ ai-job-assistant/
 │   ├── sidebar.py
 │   ├── results.py
 │   └── tabs.py
+├── tests/
+│   ├── test_parsers.py      # File parser tests
+│   ├── test_config.py       # Config & skill normalization tests
+│   ├── test_skill_matcher.py
+│   ├── test_resource_finder.py
+│   ├── test_export.py       # Export JSON tests
+│   └── test_evals.py        # LLM-as-a-judge eval tests
+├── utils/
+│   └── export.py            # Export JSON builder
 ├── requirements.txt
 └── .env.example
 ```

@@ -10,3 +10,6 @@ google-api-python-client
 plotly
 python-dotenv
 pydantic
+pytest
+requests
+beautifulsoup4
